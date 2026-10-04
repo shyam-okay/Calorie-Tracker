@@ -1,103 +1,417 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><title>Calorie Tracker (Gemini)</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<style>
-:root{--bg:#f6f7f4;--card:#fff;--tx:#1d2a22;--mut:#6b7a70;--bd:#e1e5df;--ac:#2f9e6b;--cal:#e8833a;--carb:#d9a21b;--pro:#3b82c4;--fat:#c9506b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121815;--card:#1b2420;--tx:#e8efe9;--mut:#93a39a;--bd:#2b3731}}
-:root[data-theme="dark"]{--bg:#121815;--card:#1b2420;--tx:#e8efe9;--mut:#93a39a;--bd:#2b3731}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-main{max-width:640px;margin:0 auto;padding:16px}
-h1{font-size:22px;margin:4px 0 12px}h2{font-size:15px;margin:0 0 10px}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:14px}
-.nav{display:flex;align-items:center;gap:8px;margin-bottom:14px}
-.nav input{flex:1;min-width:0}
-button{background:var(--ac);color:#fff;border:0;border-radius:10px;padding:10px 14px;font:inherit;cursor:pointer}
-button.g{background:transparent;color:var(--tx);border:1px solid var(--bd)}
-button:disabled{opacity:.5}
-input,textarea{width:100%;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:10px;font:inherit}
-textarea{resize:vertical;min-height:70px}
-.row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.row label,.lbl{font-size:12px;color:var(--mut);display:block;margin-bottom:3px}
-.bar{height:8px;background:var(--bd);border-radius:6px;overflow:hidden;margin:4px 0 10px}
-.bar i{display:block;height:100%;border-radius:6px}
-.m{display:flex;justify-content:space-between;font-size:14px}
-.m b{font-weight:600}.over{color:var(--fat)}
-.e{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--bd)}
-.e:first-child{border-top:0}.e div{flex:1;min-width:0}.e small{color:var(--mut)}
-.x{background:none;color:var(--mut);padding:4px 8px;font-size:18px}
-.msg{font-size:13px;color:var(--mut);margin-top:8px}
-.acts{display:flex;gap:8px;margin-top:10px}.acts button{flex:1}
-</style></head><body><main>
-<h1>🥗 Calorie Tracker</h1>
-<div class="nav"><button class="g" id="prev">‹</button><input type="date" id="date"><button class="g" id="next">›</button></div>
-
-<div class="card"><h2>Today's totals</h2><div id="sum"></div></div>
-
-<div class="card" id="aiCard"><h2>✨ Describe what you ate (Gemini AI)</h2>
-<textarea id="desc" placeholder="e.g. 2 rotis with dal and a bowl of curd, plus a banana"></textarea>
-<div class="acts"><button id="est">Estimate &amp; add</button></div>
-<div class="msg" id="aiMsg"></div></div>
-
-<div class="card"><h2>Or log values manually</h2>
-<input id="mn" placeholder="Food name (optional)" style="margin-bottom:8px">
-<div class="row">
-<div><label>Calories</label><input id="mc" type="number" min="0" inputmode="decimal"></div>
-<div><label>Carbs (g)</label><input id="mb" type="number" min="0" inputmode="decimal"></div>
-<div><label>Protein (g)</label><input id="mp" type="number" min="0" inputmode="decimal"></div>
-<div><label>Fat (g)</label><input id="mf" type="number" min="0" inputmode="decimal"></div></div>
-<div class="acts"><button id="add">Add entry</button></div></div>
-
-<div class="card"><h2>Entries</h2><div id="list"></div></div>
-
-
-
-<div class="card"><h2>Daily goals</h2>
-<div class="row">
-<div><label>Calories</label><input id="gc" type="number"></div>
-<div><label>Carbs (g)</label><input id="gb" type="number"></div>
-<div><label>Protein (g)</label><input id="gp" type="number"></div>
-<div><label>Fat (g)</label><input id="gf" type="number"></div></div></div>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Calorie Tracker</title>
+  <style>
+    :root {
+      --bg: #f6f7f4;
+      --card: #ffffff;
+      --text: #1d2a22;
+      --muted: #6b7a70;
+      --border: #e1e5df;
+      --accent: #2f9e6b;
+      --cal: #e8833a;
+      --carb: #d9a21b;
+      --protein: #3b82c4;
+      --fat: #c9506b;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+ 
+    /* dark mode, follows the system unless forced */
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #121815;
+        --card: #1b2420;
+        --text: #e8efe9;
+        --muted: #93a39a;
+        --border: #2b3731;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #121815;
+      --card: #1b2420;
+      --text: #e8efe9;
+      --muted: #93a39a;
+      --border: #2b3731;
+    }
+ 
+    * { box-sizing: border-box; }
+ 
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+ 
+    main {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+ 
+    h1 { font-size: 22px; margin: 4px 0 12px; }
+    h2 { font-size: 15px; margin: 0 0 10px; }
+ 
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+ 
+    .date-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .date-nav input { flex: 1; min-width: 0; }
+ 
+    button {
+      background: var(--accent);
+      color: #fff;
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font: inherit;
+      cursor: pointer;
+    }
+    button.ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    button:disabled { opacity: 0.5; }
+ 
+    input, textarea {
+      width: 100%;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      font: inherit;
+    }
+    textarea { resize: vertical; min-height: 70px; }
+ 
+    .macro-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .macro-grid label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+ 
+    .progress {
+      height: 8px;
+      background: var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 4px 0 10px;
+    }
+    .progress-fill { height: 100%; border-radius: 6px; }
+ 
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+    }
+    .summary-row b { font-weight: 600; }
+    .over { color: var(--fat); }
+ 
+    .entry {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 0;
+      border-top: 1px solid var(--border);
+    }
+    .entry:first-child { border-top: 0; }
+    .entry-info { flex: 1; min-width: 0; }
+    .entry-info small { color: var(--muted); }
+ 
+    .delete-btn {
+      background: none;
+      color: var(--muted);
+      padding: 4px 8px;
+      font-size: 18px;
+    }
+ 
+    .note { font-size: 13px; color: var(--muted); margin-top: 8px; }
+ 
+    .actions { display: flex; gap: 8px; margin-top: 10px; }
+    .actions button { flex: 1; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>🥗 Calorie Tracker</h1>
+ 
+  <div class="date-nav">
+    <button class="ghost" id="prevDay">‹</button>
+    <input type="date" id="datePicker">
+    <button class="ghost" id="nextDay">›</button>
+  </div>
+ 
+  <div class="card">
+    <h2>Today's totals</h2>
+    <div id="totals"></div>
+  </div>
+ 
+  <div class="card">
+    <h2>✨ Describe what you ate</h2>
+    <textarea id="foodText" placeholder="e.g. 2 rotis with dal and a bowl of curd, plus a banana"></textarea>
+    <div class="actions">
+      <button id="estimateBtn">Estimate &amp; add</button>
+    </div>
+    <div class="note" id="estimateNote"></div>
+  </div>
+ 
+  <div class="card">
+    <h2>Or log values manually</h2>
+    <input id="manualName" placeholder="Food name (optional)" style="margin-bottom: 8px;">
+    <div class="macro-grid">
+      <div><label>Calories</label><input id="manualCal" type="number" min="0" inputmode="decimal"></div>
+      <div><label>Carbs (g)</label><input id="manualCarbs" type="number" min="0" inputmode="decimal"></div>
+      <div><label>Protein (g)</label><input id="manualProtein" type="number" min="0" inputmode="decimal"></div>
+      <div><label>Fat (g)</label><input id="manualFat" type="number" min="0" inputmode="decimal"></div>
+    </div>
+    <div class="actions">
+      <button id="addBtn">Add entry</button>
+    </div>
+  </div>
+ 
+  <div class="card">
+    <h2>Entries</h2>
+    <div id="entryList"></div>
+  </div>
+ 
+  <div class="card">
+    <h2>Daily goals</h2>
+    <div class="macro-grid">
+      <div><label>Calories</label><input id="goalCal" type="number"></div>
+      <div><label>Carbs (g)</label><input id="goalCarbs" type="number"></div>
+      <div><label>Protein (g)</label><input id="goalProtein" type="number"></div>
+      <div><label>Fat (g)</label><input id="goalFat" type="number"></div>
+    </div>
+  </div>
 </main>
+ 
 <script>
-const $=id=>document.getElementById(id);
-const K=[["calories","Calories","kcal","--cal","gc"],["carbs","Carbs","g","--carb","gb"],["protein","Protein","g","--pro","gp"],["fat","Fat","g","--fat","gf"]];
-let data={},goals={calories:2000,carbs:250,protein:100,fat:65},day=iso(new Date()),sample=null;
-function iso(d){const z=new Date(d.getTime()-d.getTimezoneOffset()*6e4);return z.toISOString().slice(0,10)}
-function load(){try{const s=JSON.parse(localStorage.getItem("cal-tracker")||"{}");data=s.data||{};goals=s.goals||goals}catch(e){}}
-function save(){try{localStorage.setItem("cal-tracker",JSON.stringify({data,goals}))}catch(e){}}
-function entries(){return data[day]||(data[day]=[])}
-function addEntry(e){entries().push({name:e.name||"Food",calories:+e.calories||0,carbs:+e.carbs||0,protein:+e.protein||0,fat:+e.fat||0});save();render()}
-function render(){
- $("date").value=day;const es=entries();
- const t={calories:0,carbs:0,protein:0,fat:0};es.forEach(e=>K.forEach(k=>t[k[0]]+=e[k[0]]));
- $("sum").innerHTML=K.map(([k,n,u,c])=>{const g=goals[k]||0,p=g?Math.min(100,t[k]/g*100):0,left=g-t[k];
-  return `<div class="m"><span>${n}</span><span><b>${Math.round(t[k])}</b> / ${g} ${u} · <span class="${left<0?'over':''}">${left<0?Math.round(-left)+' over':Math.round(left)+' left'}</span></span></div><div class="bar"><i style="width:${p}%;background:var(${c})"></i></div>`}).join("");
- $("list").innerHTML=es.length?es.map((e,i)=>`<div class="e"><div><b></b><br><small>${Math.round(e.calories)} kcal · C ${Math.round(e.carbs)}g · P ${Math.round(e.protein)}g · F ${Math.round(e.fat)}g</small></div><button class="x" data-i="${i}">✕</button></div>`).join(""):'<div class="msg">Nothing logged for this day yet.</div>';
- $("list").querySelectorAll(".e b").forEach((b,i)=>b.textContent=es[i].name);
- $("list").querySelectorAll(".x").forEach(b=>b.onclick=()=>{entries().splice(+b.dataset.i,1);save();render()});
- K.forEach(k=>$(k[4]).value=goals[k[0]]);
-}
-function shift(n){const d=new Date(day+"T12:00:00");d.setDate(d.getDate()+n);day=iso(d);render()}
-$("prev").onclick=()=>shift(-1);$("next").onclick=()=>shift(1);
-$("date").onchange=e=>{if(e.target.value){day=e.target.value;render()}};
-K.forEach(k=>$(k[4]).onchange=e=>{goals[k[0]]=+e.target.value||0;save();render()});
-$("add").onclick=()=>{
- const v={name:$("mn").value.trim()||"Manual entry",calories:$("mc").value,carbs:$("mb").value,protein:$("mp").value,fat:$("mf").value};
- if(!(+v.calories||+v.carbs||+v.protein||+v.fat))return;
- addEntry(v);["mn","mc","mb","mp","mf"].forEach(i=>$(i).value="")};
-const PROXY_URL="https://calorie-ai.shyamcharan-mangu2022.workers.dev/"; // e.g. https://calorie-ai.yourname.workers.dev
-$("est").onclick=async()=>{
- const text=$("desc").value.trim();if(!text)return;
- if(PROXY_URL.startsWith("PASTE")){$("aiMsg").textContent="Site owner: set PROXY_URL in the HTML first.";return}
- $("est").disabled=true;$("aiMsg").textContent="Estimating…";
- try{
-  const res=await fetch(PROXY_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text})});
-  const j=await res.json();
-  if(!res.ok)throw new Error(j.error||"Request failed");
-  const items=j.items||[];if(!items.length)throw new Error("No food found in that description");
-  items.forEach(addEntry);$("desc").value="";
-  $("aiMsg").textContent="Added "+items.length+" item(s). Estimates are approximate.";
- }catch(e){$("aiMsg").textContent="Couldn't estimate: "+(e.message||"error")+". You can log manually below."}
- $("est").disabled=false};
-load();render();
-</script></body></html>
+  // Your Cloudflare worker that talks to the AI. Leave as is.
+  const PROXY_URL = "https://calorie-ai.shyamcharan-mangu2022.workers.dev/";
+  const STORAGE_KEY = "cal-tracker";
+ 
+  // key, label, unit, css color variable, goal input id
+  const NUTRIENTS = [
+    { key: "calories", label: "Calories", unit: "kcal", color: "--cal",     goalInput: "goalCal" },
+    { key: "carbs",    label: "Carbs",    unit: "g",    color: "--carb",    goalInput: "goalCarbs" },
+    { key: "protein",  label: "Protein",  unit: "g",    color: "--protein", goalInput: "goalProtein" },
+    { key: "fat",      label: "Fat",      unit: "g",    color: "--fat",     goalInput: "goalFat" }
+  ];
+ 
+  const byId = (id) => document.getElementById(id);
+ 
+  let entriesByDay = {};
+  let goals = { calories: 2000, carbs: 250, protein: 100, fat: 65 };
+  let currentDay = toDateString(new Date());
+ 
+  // YYYY-MM-DD in the user's local timezone
+  function toDateString(date) {
+    const offsetMs = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() - offsetMs).toISOString().slice(0, 10);
+  }
+ 
+  function loadData() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      entriesByDay = saved.data || {};
+      goals = saved.goals || goals;
+    } catch (err) {
+      console.warn("Couldn't read saved data", err);
+    }
+  }
+ 
+  function saveData() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ data: entriesByDay, goals }));
+    } catch (err) {
+      console.warn("Couldn't save data", err);
+    }
+  }
+ 
+  function getTodaysEntries() {
+    if (!entriesByDay[currentDay]) entriesByDay[currentDay] = [];
+    return entriesByDay[currentDay];
+  }
+ 
+  function addEntry(item) {
+    getTodaysEntries().push({
+      name: item.name || "Food",
+      calories: Number(item.calories) || 0,
+      carbs: Number(item.carbs) || 0,
+      protein: Number(item.protein) || 0,
+      fat: Number(item.fat) || 0
+    });
+    saveData();
+    render();
+  }
+ 
+  function renderTotals(entries) {
+    const totals = { calories: 0, carbs: 0, protein: 0, fat: 0 };
+    entries.forEach((entry) => {
+      NUTRIENTS.forEach((n) => { totals[n.key] += entry[n.key]; });
+    });
+ 
+    byId("totals").innerHTML = NUTRIENTS.map((n) => {
+      const goal = goals[n.key] || 0;
+      const percent = goal ? Math.min(100, (totals[n.key] / goal) * 100) : 0;
+      const remaining = goal - totals[n.key];
+      const remainingText = remaining < 0
+        ? Math.round(-remaining) + " over"
+        : Math.round(remaining) + " left";
+ 
+      return `
+        <div class="summary-row">
+          <span>${n.label}</span>
+          <span>
+            <b>${Math.round(totals[n.key])}</b> / ${goal} ${n.unit} ·
+            <span class="${remaining < 0 ? "over" : ""}">${remainingText}</span>
+          </span>
+        </div>
+        <div class="progress">
+          <div class="progress-fill" style="width:${percent}%; background:var(${n.color})"></div>
+        </div>`;
+    }).join("");
+  }
+ 
+  function renderEntryList(entries) {
+    const list = byId("entryList");
+ 
+    if (entries.length === 0) {
+      list.innerHTML = '<div class="note">Nothing logged for this day yet.</div>';
+      return;
+    }
+ 
+    list.innerHTML = entries.map((entry, index) => `
+      <div class="entry">
+        <div class="entry-info">
+          <b class="entry-name"></b><br>
+          <small>${Math.round(entry.calories)} kcal · C ${Math.round(entry.carbs)}g · P ${Math.round(entry.protein)}g · F ${Math.round(entry.fat)}g</small>
+        </div>
+        <button class="delete-btn" data-index="${index}">✕</button>
+      </div>`).join("");
+ 
+    // set names with textContent so weird characters can't break the HTML
+    list.querySelectorAll(".entry-name").forEach((el, i) => {
+      el.textContent = entries[i].name;
+    });
+ 
+    list.querySelectorAll(".delete-btn").forEach((btn) => {
+      btn.onclick = () => {
+        getTodaysEntries().splice(Number(btn.dataset.index), 1);
+        saveData();
+        render();
+      };
+    });
+  }
+ 
+  function render() {
+    const entries = getTodaysEntries();
+    byId("datePicker").value = currentDay;
+    renderTotals(entries);
+    renderEntryList(entries);
+    NUTRIENTS.forEach((n) => { byId(n.goalInput).value = goals[n.key]; });
+  }
+ 
+  function changeDay(offset) {
+    const date = new Date(currentDay + "T12:00:00");
+    date.setDate(date.getDate() + offset);
+    currentDay = toDateString(date);
+    render();
+  }
+ 
+  // --- event listeners ---
+  byId("prevDay").onclick = () => changeDay(-1);
+  byId("nextDay").onclick = () => changeDay(1);
+ 
+  byId("datePicker").onchange = (e) => {
+    if (e.target.value) {
+      currentDay = e.target.value;
+      render();
+    }
+  };
+ 
+  NUTRIENTS.forEach((n) => {
+    byId(n.goalInput).onchange = (e) => {
+      goals[n.key] = Number(e.target.value) || 0;
+      saveData();
+      render();
+    };
+  });
+ 
+  byId("addBtn").onclick = () => {
+    const item = {
+      name: byId("manualName").value.trim() || "Manual entry",
+      calories: byId("manualCal").value,
+      carbs: byId("manualCarbs").value,
+      protein: byId("manualProtein").value,
+      fat: byId("manualFat").value
+    };
+ 
+    // ignore if every number is empty/zero
+    const hasValues = Number(item.calories) || Number(item.carbs) || Number(item.protein) || Number(item.fat);
+    if (!hasValues) return;
+ 
+    addEntry(item);
+    ["manualName", "manualCal", "manualCarbs", "manualProtein", "manualFat"]
+      .forEach((id) => { byId(id).value = ""; });
+  };
+ 
+  byId("estimateBtn").onclick = async () => {
+    const text = byId("foodText").value.trim();
+    if (!text) return;
+ 
+    const button = byId("estimateBtn");
+    const note = byId("estimateNote");
+    button.disabled = true;
+    note.textContent = "Estimating…";
+ 
+    try {
+      const response = await fetch(PROXY_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text })
+      });
+      const result = await response.json();
+ 
+      if (!response.ok) throw new Error(result.error || "Request failed");
+ 
+      const items = result.items || [];
+      if (items.length === 0) throw new Error("No food found in that description");
+ 
+      items.forEach(addEntry);
+      byId("foodText").value = "";
+      note.textContent = "Added " + items.length + " item(s). Estimates are approximate.";
+    } catch (err) {
+      note.textContent = "Couldn't estimate: " + (err.message || "error") + ". You can log manually below.";
+    }
+ 
+    button.disabled = false;
+  };
+ 
+  loadData();
+  render();
+</script>
+</body>
+</html>
+ 
