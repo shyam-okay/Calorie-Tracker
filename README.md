@@ -1,4 +1,5 @@
 # Calorie-Tracker
+https://shyam-okay.github.io/Calorie-Tracker/
 Free Calorie Tracker - Integrated with Google Gemini 3.8 Flash
 User inputs calorie, protein, fats, carbs daily goal 
 Calorie Tracker calculates the calorie and the macro split and adds it to the daily log
